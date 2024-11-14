@@ -21,7 +21,7 @@ tDependencies += [
 #endif
 
 let package = Package(
-    name: "CombineWebSocket",
+    name: "combine-websocket",
     platforms: [
         .macOS(.v10_15),
         .iOS(.v13)
