@@ -45,11 +45,29 @@ open class WebSocket: NSObject, @unchecked Sendable {
     
     /// url地址
     open var url: URL? {
-        request.url
+        didSet {
+            if let url {
+                if url != request?.url {
+                    request = URLRequest(url: url)
+                }
+            } else {
+                request = nil
+            }
+        }
     }
     
     /// 请求对象
-    open var request: URLRequest
+    open var request: URLRequest? {
+        didSet {
+            if let request {
+                if url != request.url {
+                    url = request.url
+                }
+            } else {
+                url = nil
+            }
+        }
+    }
     
     open var subscriptionSet = Set<AnyCancellable>()
     
@@ -102,7 +120,7 @@ open class WebSocket: NSObject, @unchecked Sendable {
     /// 重连间隔
     public var retryDuration: UInt32 = 1
     
-    public init(request: URLRequest) {
+    public init(request: URLRequest? = nil) {
         self.request = request
         super.init()
         setup()
@@ -122,6 +140,10 @@ open class WebSocket: NSObject, @unchecked Sendable {
             return
         }
         self.willOpenPublisher.send()
+        guard let request else {
+            logError("准备开始连接ws时，没有url request，无法连接")
+            return
+        }
 #if canImport(WebSocketKit)
         let urlStr = request.url?.absoluteString
         logInfo("开始连接\(urlStr ?? "")")

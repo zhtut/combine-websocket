@@ -24,7 +24,7 @@ extension WebSocket {
     
     /// 详细配置回调的方法
     func configWebSocket() {
-        logInfo("websocket连接成功")
+        logInfo("websocket\(url?.absoluteString ?? "")连接成功")
         ws?.pingInterval = TimeAmount.minutes(8)
         ws?.onText({ [weak self] (_, string) async in
             self?.didReceive(string)
@@ -122,7 +122,7 @@ extension WebSocket: URLSessionWebSocketDelegate {
     public func urlSession(_ session: URLSession,
                            webSocketTask: URLSessionWebSocketTask,
                            didOpenWithProtocol protocol: String?) {
-        logInfo("webSocketTask:didOpenWithProtocol:\(`protocol` ?? "")")
+        logInfo("\(url?.absoluteString ?? ""), webSocketTask:didOpenWithProtocol:\(`protocol` ?? "")")
         self.onOpenPublisher.send()
         Task {
             do {
