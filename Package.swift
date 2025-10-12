@@ -6,6 +6,15 @@ import PackageDescription
 var pDependencies = [PackageDescription.Package.Dependency]()
 var tDependencies = [PackageDescription.Target.Dependency]()
 
+pDependencies += [
+    .package(url: "https://github.com/zhtut/logging-kit.git", from: "0.1.0"),
+    //            .package(path: "../../logging-kit"),
+]
+
+tDependencies += [
+    .product(name: "LoggingKit", package: "logging-kit"),
+]
+
 #if os(macOS) || os(iOS)
 // ios 和 macos不需要这个，系统自带了
 #else
@@ -23,8 +32,7 @@ tDependencies += [
 let package = Package(
     name: "combine-websocket",
     platforms: [
-        .macOS(.v10_15),
-        .iOS(.v13)
+        .macOS(.v13), .iOS(.v16), .tvOS(.v16), .watchOS(.v9) // 支持 Swift 6.0 的最低版本
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.

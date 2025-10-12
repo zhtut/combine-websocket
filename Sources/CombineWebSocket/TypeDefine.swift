@@ -10,6 +10,8 @@ import Foundation
 public enum WebSocketError: Error {
     case noTask
     case taskNotRunning
+    case sessionBecomeInvalid
+    case taskCompletedWithoutError
 }
 
 public enum WebSocketState {
