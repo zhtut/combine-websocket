@@ -7,11 +7,11 @@
 import Foundation
 import LoggingKit
 
-// MARK: send
-
-#if canImport(WebSocketKit)
-@available(macOS 12, *)
+#if canImport(FoundationNetworking)
+import FoundationNetworking
 #endif
+
+// MARK: send
 extension WebSocket {
     
     /// 关闭连接
