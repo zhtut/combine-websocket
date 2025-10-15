@@ -9,39 +9,22 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
-#if canImport(CombineX)
 import CombineX
-#else
-import Combine
-#endif
-
-#if canImport(WebSocketKit)
 import WebSocketKit
 import NIO
 import NIOWebSocket
 import NIOPosix
-#endif
 
 import LoggingKit
 
 /// 使用系统的URLSessionWebSocketTask实现的WebSocket客户端
 open class WebSocket: NSObject, @unchecked Sendable {
     
-#if canImport(WebSocketKit)
     /// eventLoop组
     var elg = MultiThreadedEventLoopGroup(numberOfThreads: 2)
     
     /// websocket对象
     open var ws: WebSocketKit.WebSocket?
-    
-#else
-    
-    open var session: URLSession!
-    
-    /// 请求task，保持长连接的task
-    var task: URLSessionWebSocketTask?
-    
-#endif
     
     /// url地址
     open var url: URL? {
@@ -84,34 +67,14 @@ open class WebSocket: NSObject, @unchecked Sendable {
     
     let delegateQueue = OperationQueue()
     
-#if canImport(WebSocketKit)
     private var _state = WebSocketState.closed
-#endif
     
     /// 连接状态
     public var state: WebSocketState {
-#if canImport(WebSocketKit)
         guard let ws else {
             return WebSocketState.closed
         }
         return ws.isClosed ? WebSocketState.closed : _state
-#else
-        guard let task else {
-            return WebSocketState.closed
-        }
-        switch task.state {
-        case .running:
-            return WebSocketState.connected
-        case .suspended:
-            return WebSocketState.suspended
-        case .canceling:
-            return WebSocketState.closing
-        case .completed:
-            return WebSocketState.closed
-        @unknown default:
-            return WebSocketState.closed
-        }
-#endif
     }
     
     /// 自动重连接
@@ -127,10 +90,7 @@ open class WebSocket: NSObject, @unchecked Sendable {
     }
     
     public func setup() {
-#if canImport(WebSocketKit)
-#else
-        session = URLSession(configuration: .default, delegate: self, delegateQueue: delegateQueue)
-#endif
+        
     }
     
     /// 开始连接
@@ -144,7 +104,7 @@ open class WebSocket: NSObject, @unchecked Sendable {
             logError("准备开始连接ws时，没有url request，无法连接")
             return
         }
-#if canImport(WebSocketKit)
+        
         let urlStr = request.url?.absoluteString
         logInfo("开始连接\(urlStr ?? "")")
         
@@ -167,13 +127,6 @@ open class WebSocket: NSObject, @unchecked Sendable {
                                                      on: elg,
                                                      onUpgrade: setupWebSocket)
         }
-#else
-        
-        task = session.webSocketTask(with: request)
-        task?.maximumMessageSize = maxMessageSize
-        logInfo("开始连接\(request.url?.absoluteString ?? "")")
-        task?.resume()
-#endif
     }
     
     /// 延迟1s后重连

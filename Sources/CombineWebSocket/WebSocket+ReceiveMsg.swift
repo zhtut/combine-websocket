@@ -8,9 +8,6 @@ import Foundation
 import LoggingKit
 
 // MARK: receive
-#if canImport(WebSocketKit)
-@available(macOS 12, *)
-#endif
 extension WebSocket {
     func didReceive(_ string: String) {
         if let data = string.data(using: .utf8) {
@@ -30,31 +27,21 @@ extension WebSocket {
     }
     
     func didReceivePing() {
-#if canImport(WebSocketKit)
         logInfo("收到ping")
         Task {
             try await sendPong()
         }
-#endif
     }
     
     func didReceiveError(_ error: NSError) {
         logError("WS\(url?.absoluteString ?? "")收到异常：\(error.code) \(error.localizedDescription)")
         self.onErrorPublisher.send(error)
-#if canImport(WebSocketKit)
-#else
-        task = nil
-#endif
         reConnectDelay()
     }
     
     func didClose(code: Int, reason: String? = nil) {
         logError("WS\(url?.absoluteString ?? "")已关闭：\(code) \(reason ?? "")")
         self.onClosePublisher.send((code, reason))
-#if canImport(WebSocketKit)
-#else
-        task = nil
-#endif
         reConnectDelay()
     }
 }

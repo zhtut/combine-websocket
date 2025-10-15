@@ -6,8 +6,6 @@
 //
 import Foundation
 import LoggingKit
-
-#if canImport(WebSocketKit)
 import WebSocketKit
 import NIOCore
 
@@ -69,83 +67,3 @@ extension WebSocket {
         })
     }
 }
-#else
-extension WebSocket: URLSessionWebSocketDelegate {
-    
-    private func receive() async throws {
-        guard let task = task else {
-            throw WebSocketError.noTask
-        }
-        guard state == .connected else {
-            throw WebSocketError.taskNotRunning
-        }
-        
-        let message = try await task.receive()
-        switch message {
-        case .string(let string):
-            didReceive(string)
-        case .data(let data):
-            didReceive(data)
-        @unknown default:
-            logError("task.receive error")
-        }
-        
-        try await receive()
-    }
-    
-    public func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
-        logError("didBecomeInvalidWithError:\(error?.localizedDescription ?? "")")
-        
-        var nsError: NSError
-        if let error {
-            nsError = error as NSError
-        } else {
-            nsError = WebSocketError.sessionBecomeInvalid as NSError
-        }
-        
-        didReceiveError(nsError)
-    }
-    
-    public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        logError("didCompleteWithError:\(error?.localizedDescription ?? "")")
-        
-        var nsError: NSError
-        if let error {
-            nsError = error as NSError
-        } else {
-            nsError = WebSocketError.taskCompletedWithoutError as NSError
-        }
-        
-        didReceiveError(nsError)
-    }
-    
-    public func urlSession(_ session: URLSession,
-                           webSocketTask: URLSessionWebSocketTask,
-                           didOpenWithProtocol protocol: String?) {
-        logInfo("\(url?.absoluteString ?? ""), webSocketTask:didOpenWithProtocol:\(`protocol` ?? "")")
-        self.onOpenPublisher.send()
-        Task {
-            do {
-                try await self.receive()
-            }
-            catch {
-                logError("读取数据错误：\(error)")
-                didReceiveError(error as NSError)
-            }
-        }
-    }
-    
-    public func urlSession(_ session: URLSession,
-                           webSocketTask: URLSessionWebSocketTask,
-                           didCloseWith closeCode: URLSessionWebSocketTask.CloseCode,
-                           reason: Data?) {
-        logInfo("urlSession:didCloseWith:\(closeCode)")
-        var r = ""
-        if let d = reason {
-            r = String(data: d, encoding: .utf8) ?? ""
-        }
-        let intCode = closeCode.rawValue
-        didClose(code: intCode, reason: r)
-    }
-}
-#endif

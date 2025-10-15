@@ -6,7 +6,6 @@
 //
 import Foundation
 import LoggingKit
-
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -21,11 +20,7 @@ extension WebSocket {
     public func close(_ closeCode: URLSessionWebSocketTask.CloseCode = .normalClosure,
                       reason: String? = nil) async throws {
         if state == .connected {
-#if canImport(WebSocketKit)
             try await ws?.close(code: .init(codeNumber: closeCode.rawValue))
-#else
-            task?.cancel(with: closeCode, reason: reason?.data(using: .utf8))
-#endif
         }
     }
     
@@ -37,11 +32,7 @@ extension WebSocket {
             return
         }
         logInfo("发送string:\(string)")
-#if canImport(WebSocketKit)
         try await ws?.send(string)
-#else
-        try await task?.send(.string(string))
-#endif
     }
     
     /// 发送data
@@ -52,35 +43,17 @@ extension WebSocket {
             return
         }
         logInfo("发送Data:\(data.count)")
-#if canImport(WebSocketKit)
         let bytes = [UInt8](data)
         try await ws?.send(bytes)
-#else
-        try await task?.send(.data(data))
-#endif
     }
     
     /// 发送一个ping
     public func sendPing() async throws {
-#if canImport(WebSocketKit)
         try await ws?.sendPing()
-#else
-        return try await withCheckedThrowingContinuation { continuation in
-            task?.sendPing(pongReceiveHandler: { error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else {
-                    continuation.resume()
-                }
-            })
-        }
-#endif
     }
     
-#if canImport(WebSocketKit)
     /// 系统的自己会回pong，连方法都没有给出
     public func sendPong() async throws {
         try await ws?.send(raw: Data(), opcode: .pong, fin: true)
     }
-#endif
 }

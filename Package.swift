@@ -15,19 +15,15 @@ tDependencies += [
     .product(name: "LoggingKit", package: "logging-kit"),
 ]
 
-#if os(macOS) || os(iOS)
-// ios 和 macos不需要这个，系统自带了
-#else
 let latestVersion: Range<Version> = "0.0.1"..<"99.99.99"
 pDependencies += [
     .package(url: "https://github.com/zhtut/CombineX.git", latestVersion),
-    .package(url: "https://github.com/vapor/websocket-kit.git", from: "2.3.1"),
+    .package(url: "https://github.com/vapor/websocket-kit.git", from: "2.6.1"),
 ]
 tDependencies += [
     "CombineX",
     .product(name: "WebSocketKit", package: "websocket-kit"),
 ]
-#endif
 
 let package = Package(
     name: "combine-websocket",
