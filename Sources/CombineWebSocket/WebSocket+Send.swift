@@ -20,6 +20,7 @@ extension WebSocket {
     public func close(_ closeCode: URLSessionWebSocketTask.CloseCode = .normalClosure,
                       reason: String? = nil) async throws {
         if state == .connected {
+            _state = .closing
             try await ws?.close(code: .init(codeNumber: closeCode.rawValue))
         }
     }

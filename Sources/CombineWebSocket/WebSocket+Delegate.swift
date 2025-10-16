@@ -16,6 +16,7 @@ extension WebSocket {
     /// - Parameter ws: websocket对象
     func setupWebSocket(ws: WebSocketKit.WebSocket) async {
         self.ws = ws
+        _state = .connected
         configWebSocket()
         self.onOpenPublisher.send()
     }
@@ -23,7 +24,7 @@ extension WebSocket {
     /// 详细配置回调的方法
     func configWebSocket() {
         logInfo("websocket\(url?.absoluteString ?? "")连接成功")
-        ws?.pingInterval = TimeAmount.minutes(8)
+        ws?.pingInterval = TimeAmount.minutes(3)
         ws?.onText({ [weak self] (_, string) async in
             self?.didReceive(string)
         })

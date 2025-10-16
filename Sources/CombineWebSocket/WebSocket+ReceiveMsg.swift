@@ -33,13 +33,8 @@ extension WebSocket {
         }
     }
     
-    func didReceiveError(_ error: NSError) {
-        logError("WS\(url?.absoluteString ?? "")收到异常：\(error.code) \(error.localizedDescription)")
-        self.onErrorPublisher.send(error)
-        reConnectDelay()
-    }
-    
     func didClose(code: Int, reason: String? = nil) {
+        _state = .closed
         logError("WS\(url?.absoluteString ?? "")已关闭：\(code) \(reason ?? "")")
         self.onClosePublisher.send((code, reason))
         reConnectDelay()

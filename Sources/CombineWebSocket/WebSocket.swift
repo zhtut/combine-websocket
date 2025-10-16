@@ -67,7 +67,7 @@ open class WebSocket: NSObject, @unchecked Sendable {
     
     let delegateQueue = OperationQueue()
     
-    private var _state = WebSocketState.closed
+    var _state = WebSocketState.closed
     
     /// 连接状态
     public var state: WebSocketState {
@@ -99,6 +99,7 @@ open class WebSocket: NSObject, @unchecked Sendable {
             logInfo("state为connected，不需要连接")
             return
         }
+        _state = .connecting
         self.willOpenPublisher.send()
         guard let request else {
             logError("准备开始连接ws时，没有url request，无法连接")
